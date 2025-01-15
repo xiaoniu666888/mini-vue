@@ -1,5 +1,4 @@
-import { activeEffect } from "./effect"
-import { track } from "./reactiveEffect"
+import { track, trigger } from "./reactiveEffect"
 
 export enum ReactiveFlags {
     // 表示一个对象是响应式的
@@ -19,6 +18,12 @@ export const mutableHandlers: ProxyHandler<any> = {
     },
     set(target, key, value, receiver) {
         // 触发更新 => 找到属性, 让对应的 effect 重新执行 
-        return Reflect.set(target, key, value, receiver)
+
+        let oldValue = target[key]
+        let result = Reflect.set(target, key, value, receiver)
+        if (oldValue !== value) {
+            trigger(target, key, value, oldValue)
+        }
+        return result
     }
 }

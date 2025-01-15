@@ -14,23 +14,19 @@
         effect
       } from "./packages/reactivity/dist/reactivity.js"
       const app = document.getElementById("app")
-      const obj = { name: "小牛", age: 18 }
+      const obj = { name: "小牛", age: 18, flag: true }
       const state = reactive(obj)
-      // effect(() => {
-      //   console.log(state.name)
-      //   effect(() => {
-      //     console.log(state.name)
-      //   })
-      //   console.log(state.age)
-      // })
       effect(() => {
-        app.innerHTML = state.name + state.age + "岁"
+        console.log("fn run")
+        app.innerHTML = state.flag ? state.name : state.age
       })
-      effect(() => {
-        app.innerHTML = state.name
-      })
+
       setTimeout(() => {
-        state.age++
+        state.flag = false
+        setTimeout(() => {
+          state.name = "handsome 小牛"
+          console.log("修改属性后, 不应该再次触发")
+        }, 1000)
       }, 1000)
     </script>
   </body>
