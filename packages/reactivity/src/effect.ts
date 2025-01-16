@@ -7,12 +7,31 @@ export function effect(fn, options?) {
         _effect.run()
     })
     _effect.run()
-    return _effect
+
+    if (options) {
+        // 用户传递的覆盖掉内置的
+        Object.assign(_effect, options)
+    }
+    const runner = _effect.run.bind(_effect)
+    // 可以在run方法上获取到effect的引用
+    runner.effect = _effect
+    // 外界可以自己让其重新run
+    return runner
 }
 function preCleanEffect(effect) {
     effect._depsLength = 0
     // 每次执行 id 都 +1 如果当前同一个effect执行 id就是相同的
     effect._trackId++
+}
+function postCleanEffect(effect) {
+    if (effect.deps.length > effect._depsLength) {
+        for (let i = effect._depsLength; i < effect.deps.length; i++) {
+            // 删除映射表中对应的effect
+            cleanDepEffect(effect.deps[i], effect)
+        }
+        // 更新依赖列表的长度
+        effect.deps.length = effect._depsLength
+    }
 }
 export let activeEffect;
 class ReactiveEffect {
@@ -39,6 +58,7 @@ class ReactiveEffect {
             return this.fn()
         }
         finally {
+            postCleanEffect(this)
             // 执行完后, 重置
             activeEffect = lastEffect
         }
