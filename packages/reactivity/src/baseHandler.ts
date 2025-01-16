@@ -1,9 +1,7 @@
+import { ReactiveFlags } from "./constants"
 import { track, trigger } from "./reactiveEffect"
 
-export enum ReactiveFlags {
-    // 表示一个对象是响应式的
-    IS_REACTIVE = '__v_isReactive'
-}
+
 
 
 export const mutableHandlers: ProxyHandler<any> = {

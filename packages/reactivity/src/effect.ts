@@ -1,3 +1,5 @@
+import { DirtyLevels } from "./constants"
+
 export function effect(fn, options?) {
     // 创建一个响应式effect 数据变化后可以重新执行
 
@@ -40,10 +42,20 @@ class ReactiveEffect {
     deps = []
     _depsLength = 0
     public active = true
+    _dirtyLevel = DirtyLevels.Dirty
     // fn 用户编写的函数
     // 如果fn中依赖的数据发生变化后, 需要重新调用 => run() 
     constructor(public fn, public scheduler) { }
+
+    public get dirty() {
+        return this.dirty === DirtyLevels.Dirty
+    }
+    public set dirty(value) {
+        this._dirtyLevel = value ? DirtyLevels.Dirty : DirtyLevels.NoDirty
+    }
     run() {
+        // 每次运行过后effect变为no_dirty
+        this._dirtyLevel = DirtyLevels.NoDirty
         // 让fn执行
         if (!this.active) {
             // 如果不是激活状态, 执行后, 什么都不用做
