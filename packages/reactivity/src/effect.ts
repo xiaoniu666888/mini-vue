@@ -36,7 +36,7 @@ function postCleanEffect(effect) {
     }
 }
 export let activeEffect;
-class ReactiveEffect {
+export class ReactiveEffect {
     // 用于记录当前effect执行了几次
     _trackId = 0
     deps = []
@@ -48,7 +48,7 @@ class ReactiveEffect {
     constructor(public fn, public scheduler) { }
 
     public get dirty() {
-        return this.dirty === DirtyLevels.Dirty
+        return this._dirtyLevel === DirtyLevels.Dirty
     }
     public set dirty(value) {
         this._dirtyLevel = value ? DirtyLevels.Dirty : DirtyLevels.NoDirty
@@ -112,6 +112,10 @@ export function trackEffect(activeEffect, dep) {
 // 触发更新
 export function triggerEffects(dep) {
     for (const effect of dep.keys()) {
+        // 当前这个值是不脏的, 但是触发更新需要将值变为脏值
+        if (effect._dirtyLevel < DirtyLevels.Dirty) {
+            effect._dirtyLevel = DirtyLevels.Dirty
+        }
         if (effect.scheduler) {
             effect.scheduler()
         }

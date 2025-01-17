@@ -8,16 +8,34 @@
   <body>
     <div id="app"></div>
     <script type="module">
-      import { ref, effect } from "./packages/reactivity/dist/reactivity.js"
+      import {
+        ref,
+        effect,
+        computed,
+        reactive
+      } from "./packages/reactivity/dist/reactivity.js"
 
       const app = document.getElementById("app")
-      const flag = ref(true)
-      effect(() => {
-        app.innerHTML = flag.value ? "flag is true" : "flag is false"
-      })
 
+      const state = reactive({ name: "xiaoniu" })
+      const aliaName = computed({
+        get(oldValue) {
+          console.log("getter run", oldValue)
+          return state.name + "111"
+        },
+        set(val) {
+          console.log(val)
+          // state.name = val
+        }
+      })
+      effect(() => {
+        console.log(aliaName.value)
+        console.log(aliaName.value)
+        console.log(aliaName.value)
+      })
       setTimeout(() => {
-        flag.value = false
+        state.name = "xiaoniu222"
+        // aliaName.name = "xxx"
       }, 1000)
     </script>
   </body>
