@@ -19,10 +19,6 @@ class ComputedRefImpl {
             this._value = this.effect.run()
             trackRefValue(this)
             // 如果当前在effect中访问了计算属性, 计算属性是可以收集这个effect的
-
-
-
-
         }
         return this._value
     }

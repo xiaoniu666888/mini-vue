@@ -39,10 +39,12 @@ export let activeEffect;
 export class ReactiveEffect {
     // 用于记录当前effect执行了几次
     _trackId = 0
-    deps = []
     _depsLength = 0
-    public active = true
+    _running = 0;
     _dirtyLevel = DirtyLevels.Dirty
+    public active = true
+    deps = []
+
     // fn 用户编写的函数
     // 如果fn中依赖的数据发生变化后, 需要重新调用 => run() 
     constructor(public fn, public scheduler) { }
@@ -66,10 +68,11 @@ export class ReactiveEffect {
             activeEffect = this
             // effect 重新执行前, 要将上一次的effect清除掉 effect.deps
             preCleanEffect(this)
+            this._running++;
             // 依赖收集
             return this.fn()
-        }
-        finally {
+        } finally {
+            this._running--;
             postCleanEffect(this)
             // 执行完后, 重置
             activeEffect = lastEffect
@@ -113,11 +116,15 @@ export function trackEffect(activeEffect, dep) {
 export function triggerEffects(dep) {
     for (const effect of dep.keys()) {
         // 当前这个值是不脏的, 但是触发更新需要将值变为脏值
+        // 属性依赖了计算属性, 需要让计算属性的dirty变为true
         if (effect._dirtyLevel < DirtyLevels.Dirty) {
             effect._dirtyLevel = DirtyLevels.Dirty
         }
-        if (effect.scheduler) {
-            effect.scheduler()
+        if (!effect._running) {
+            if (effect.scheduler) {
+                // 如果不是正在执行, 才能执行
+                effect.scheduler() // => effect.run()
+            }
         }
     }
 }
