@@ -79,8 +79,11 @@ export class ReactiveEffect {
         }
     }
     stop() {
-        // todo
-        this.active = false
+        if (this.active) {
+            this.active = false
+            preCleanEffect(this)
+            postCleanEffect(this)
+        }
     }
 }
 function cleanDepEffect(dep, effect) {

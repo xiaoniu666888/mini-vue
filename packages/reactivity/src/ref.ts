@@ -1,6 +1,6 @@
 import { activeEffect, trackEffect, triggerEffects } from "./effect";
 import { createDep } from "./reactiveEffect";
-import { toReactive } from "./reactivity";
+import { toReactive } from "./reactive";
 
 export function ref(value) {
     return createRef(value)
@@ -38,7 +38,7 @@ class RefImpl {
 
 export function trackRefValue(ref) {
     if (activeEffect) {
-        trackEffect(activeEffect, ref.dep = createDep(() => ref.dep = undefined, "undefined"))
+        trackEffect(activeEffect, (ref.dep = ref.dep || createDep(() => (ref.dep = undefined), "undefined")))
     }
 }
 export function triggerRefValue(ref) {
@@ -90,4 +90,8 @@ export function proxyRefs(objectWithRefs) {
             }
         }
     })
+}
+
+export function isRef(value) {
+    return value && value._v_isRef
 }
