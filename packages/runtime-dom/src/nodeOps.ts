@@ -9,9 +9,7 @@ export const nodeOps = {
   //   删除元素
   remove(el) {
     const parent = el.parentNode;
-    if (parent) {
-      parent.removeChild(el);
-    }
+    parent && parent.removeChild(el);
   },
   // 创建元素
   createElement(type) {
@@ -29,4 +27,12 @@ export const nodeOps = {
   setElementText(el, text) {
     el.textContent = text;
   },
-};
+  // 获取当前节点的父元素
+  parentNode(node) {
+    return node.parentNode;
+  },
+  // 获取下一个兄弟节点
+  nextSibling(node) {
+    return node.nextSibling;
+  }
+}
