@@ -4,3 +4,5 @@ export function isObject(value: any): boolean {
 export function isFunction(value: any): boolean {
     return typeof value === 'function';
 }
+
+export * from './shapeFlags'
