@@ -132,13 +132,56 @@ export function createRenderer(renderOptions) {
         }
         console.log('插入', anchor);
       }
+    } else if (i > e2) {
+      // a b c
+      // a b -> i = 2, e1 = 2, e2 = 1  i > e2 && i <= e1
+
+      // c a b
+      // a b -> i = 0, e1 = 1, e2 = -1  i > e2 && i <= e1
+      if (i <= e1) {
+        // 删除
+        while (i <= e1) {
+          unmount(c1[i]);
+          i++;
+        }
+      }
+    } else {
+      let s1 = i;
+      let s2 = i;
+
+      const keyToNewIndexMap = new Map(); // 创建一个映射表用于快速查找, 看老的是否在新的里面还有, 没有就删除, 有的话就更新
+      let toBePatched = e2 - s2 + 1; // 要倒序插入的个数
+      let newIndexToOldIndexMap = new Array(toBePatched).fill(0); // 新的索引到老的索引的映射表
+      // 新
+      for (let j = s2; j <= e2; j++) {
+        const nextChild = c2[j];
+        keyToNewIndexMap.set(nextChild.key, j);
+      }
+      // 老
+      for (let j = s1; j <= e1; j++) {
+        const vnode = c1[j];
+        let newIndex = keyToNewIndexMap.get(vnode.key); // 获取老的是否在新的里面还有, 没有就删除, 有的话就更新
+        if (newIndex === undefined) { // 老的不在新的里面
+          unmount(vnode);
+        } else {
+          newIndexToOldIndexMap[newIndex - s2] = j + 1; // 新的索引到老的索引的映射表;
+          patch(vnode, c2[newIndex], container);
+        }
+      }
+      // 调整顺序
+      for (let i = toBePatched - 1; i >= 0; i--) {
+        let newIndex = s2 + i; // 新的开始位置
+        let anchor = c2[newIndex + 1]?.el;
+        let vnode = c2[newIndex];
+        if (!vnode.el) {
+          patch(null, vnode, container, anchor); // 新的节点没有el, 就进行patch插入
+        } else {
+          hostInsert(vnode.el, container, anchor); // 新的节点有el, 就进行insert
+        }
+      }
     }
 
-    // a b c
-    // a b -> i = 2, e1 = 2, e2 = 1  i > e2 && i <= e1
 
-    // c a b
-    // a b -> i = 0, e1 = 1, e2 = -1  i > e2 && i <= e1
 
 
   }
